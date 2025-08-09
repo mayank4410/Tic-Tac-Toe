@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tic Tac Toe Game</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: white;
+      overflow-y: auto;
+    }
+
+    h1 {
+      color: #ff00ff;
+      text-shadow: 0 0 15px #ff00ff, 0 0 30px #ff00ff;
+      animation: neonBlink 1.5s infinite alternate;
+    }
+
+    @keyframes neonBlink {
+      from { text-shadow: 0 0 15px #ff00ff; }
+      to { text-shadow: 0 0 30px #ff00ff, 0 0 50px #ff00ff; }
+    }
+
+    .mode-container {
+      margin-bottom: 30px; /* Gap between mode and board */
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 10px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    }
+
+    .cell {
+      background: linear-gradient(45deg, #1f1f1f, #2c2c2c);
+      border: 3px solid #00ffcc;
+      font-size: 2.5rem;
+      color: #00ffcc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 10px;
+      transform-style: preserve-3d;
+    }
+
+    .cell:hover {
+      background: linear-gradient(45deg, #333, #444);
+      transform: scale(1.1) rotateY(10deg);
+      box-shadow: 0 0 20px #00ffcc;
+    }
+
+    .cell.win {
+      background: linear-gradient(45deg, #00ffcc, #ff00ff);
+      color: #000;
+      animation: winPulse 0.7s infinite alternate;
+    }
+
+    @keyframes winPulse {
+      from { transform: scale(1) rotateY(0); }
+      to { transform: scale(1.2) rotateY(10deg); }
+    }
+
+    .status {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #ffcc00;
+      text-shadow: 0 0 10px #ffcc00;
+    }
+
+    .btn, select {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: linear-gradient(45deg, #00ffcc, #ff00ff);
+      border: none;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      color: #000;
+      font-weight: bold;
+      box-shadow: 0 0 15px #00ffcc;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .btn:hover, select:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px #ff00ff;
+    }
+
+    .scoreboard {
+      margin-top: 10px;
+      font-size: 1rem;
+      color: #00ffff;
+      text-shadow: 0 0 5px #00ffff;
+    }
+
+    @media (max-width: 400px) {
+      .board {
+        grid-template-columns: repeat(3, 80px);
+        grid-template-rows: repeat(3, 80px);
+      }
+
+      .cell {
+        font-size: 2rem;
+      }
+
+      .mode-container {
+        margin-bottom: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Tic Tac Toe</h1>
+  <div class="mode-container">
+    <label for="modeSelect" style="color: #ff00ff; margin-right: 10px;">Mode:</label>
+    <select id="modeSelect" onchange="changeMode()">
+      <option value="friend">2 Players (Friend)</option>
+      <option value="easy">Vs Computer (Easy)</option>
+      <option value="medium">Vs Computer (Medium)</option>
+      <option value="hard">Vs Computer (Hard)</option>
+    </select>
+  </div>
+  <div class="board" id="board">
+    <div class="cell" data-index="0"></div>
+    <div class="cell" data-index="1"></div>
+    <div class="cell" data-index="2"></div>
+    <div class="cell" data-index="3"></div>
+    <div class="cell" data-index="4"></div>
+    <div class="cell" data-index="5"></div>
+    <div class="cell" data-index="6"></div>
+    <div class="cell" data-index="7"></div>
+    <div class="cell" data-index="8"></div>
+  </div>
+  <div class="status" id="status">Player X's turn</div>
+  <div class="scoreboard" id="scoreboard">X: 0 | O: 0 | Draws: 0</div>
+  <button class="btn" onclick="restartGame()">Restart</button>
+  <audio id="win-sound" src="https://www.soundjay.com/buttons/beep-01a.mp3"></audio>
+  <audio id="draw-sound" src="https://www.soundjay.com/buttons/beep-02.mp3"></audio>
+
+  <script>
+    const cells = document.querySelectorAll('.cell');
+    const statusText = document.getElementById('status');
+    const scoreboard = document.getElementById('scoreboard');
+    const modeSelect = document.getElementById('modeSelect');
+    const winSound = document.getElementById('win-sound');
+    const drawSound = document.getElementById('draw-sound');
+
+    let currentPlayer = 'X';
+    let board = ['', '', '', '', '', '', '', '', ''];
+    let gameActive = true;
+    let scores = { X: 0, O: 0, Draws: 0 };
+    let mode = 'friend';
+
+    const winPatterns = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
+    ];
+
+    function handleClick(e) {
+      const index = e.target.dataset.index;
+      if (!gameActive || board[index] !== '') return;
+
+      board[index] = currentPlayer;
+      e.target.textContent = currentPlayer;
+
+      const win = checkWin();
+      if (win) {
+        highlightWin(win);
+        statusText.textContent = `Player ${currentPlayer} wins!`;
+        scores[currentPlayer]++;
+        gameActive = false;
+        updateScore();
+        winSound.play();
+        return;
+      }
+
+      if (board.every(cell => cell !== '')) {
+        statusText.textContent = "It's a Draw!";
+        scores.Draws++;
+        gameActive = false;
+        updateScore();
+        drawSound.play();
+        return;
+      }
+
+      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      statusText.textContent = `Player ${currentPlayer}'s turn`;
+
+      if (gameActive && currentPlayer === 'O' && mode !== 'friend') {
+        setTimeout(computerMove, 300);
+      }
+    }
+
+    function computerMove() {
+      let emptyIndexes = board.map((val, idx) => val === '' ? idx : null).filter(i => i !== null);
+
+      let move;
+      if (mode === 'easy') {
+        move = emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
+      } else if (mode === 'medium') {
+        move = findWinningMove('O') || findWinningMove('X') || emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
+      } else if (mode === 'hard') {
+        move = minimax(board, 'O').index;
+      }
+
+      if (move !== undefined) {
+        const cell = document.querySelector(`.cell[data-index='${move}']`);
+        cell.click();
+      }
+    }
+
+    function findWinningMove(player) {
+      for (let pattern of winPatterns) {
+        const [a, b, c] = pattern;
+        const line = [board[a], board[b], board[c]];
+        if (line.filter(x => x === player).length === 2 && line.includes('')) {
+          return pattern[line.indexOf('')];
+        }
+      }
+      return null;
+    }
+
+    function minimax(newBoard, player) {
+      const huPlayer = 'X';
+      const aiPlayer = 'O';
+      const availSpots = newBoard.map((v, i) => v === '' ? i : null).filter(v => v !== null);
+
+      if (checkWinState(newBoard, huPlayer)) return { score: -10 };
+      if (checkWinState(newBoard, aiPlayer)) return { score: 10 };
+      if (availSpots.length === 0) return { score: 0 };
+
+      let bestScore = player === aiPlayer ? -Infinity : Infinity;
+      let bestMove;
+
+      for (let i = 0; i < availSpots.length; i++) {
+        let move = { index: availSpots[i] };
+        newBoard[availSpots[i]] = player;
+
+        const score = minimax(newBoard, player === aiPlayer ? huPlayer : aiPlayer).score;
+        move.score = score;
+
+        newBoard[availSpots[i]] = '';
+        if (player === aiPlayer) {
+          if (score > bestScore) {
+            bestScore = score;
+            bestMove = move;
+          }
+        } else {
+          if (score < bestScore) {
+            bestScore = score;
+            bestMove = move;
+          }
+        }
+      }
+
+      return bestMove || { score: 0 };
+    }
+
+    function checkWinState(b, player) {
+      return winPatterns.some(p => p.every(i => b[i] === player));
+    }
+
+    function checkWin() {
+      for (let pattern of winPatterns) {
+        const [a, b, c] = pattern;
+        if (board[a] && board[a] === board[b] && board[b] === board[c]) {
+          return pattern;
+        }
+      }
+      return null;
+    }
+
+    function highlightWin(indices) {
+      indices.forEach(i => cells[i].classList.add('win'));
+    }
+
+    function updateScore() {
+      scoreboard.textContent = `X: ${scores.X} | O: ${scores.O} | Draws: ${scores.Draws}`;
+    }
+
+    function restartGame() {
+      board = ['', '', '', '', '', '', '', '', ''];
+      currentPlayer = 'X';
+      gameActive = true;
+      cells.forEach(cell => {
+        cell.textContent = '';
+        cell.classList.remove('win');
+      });
+      statusText.textContent = `Player ${currentPlayer}'s turn`;
+      if (mode !== 'friend' && currentPlayer === 'O') {
+        setTimeout(computerMove, 300);
+      }
+    }
+
+    function changeMode() {
+      mode = modeSelect.value;
+      restartGame();
+    }
+
+    cells.forEach(cell => cell.addEventListener('click', handleClick));
+  </script>
+</body>
+</html>
