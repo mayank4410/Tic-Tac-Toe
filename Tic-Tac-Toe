@@ -1,0 +1,81 @@
+
+---
+
+## Features
+
+- **Multiple game modes:**  
+  - Two Player (play with a friend)  
+  - Single Player vs Computer (Easy, Medium, Hard)
+
+- **Intelligent AI:**  
+  - Easy: Random moves  
+  - Medium: Blocks opponent and takes winning moves  
+  - Hard: Perfect play using Minimax algorithm
+
+- **Interactive UI:**  
+  - Neon glowing effects and animations  
+  - Hover scaling and rotating effects on cells  
+  - Highlight winning line with animation
+
+- **Score tracking:**  
+  - Wins, losses, and draws are tracked and displayed live
+
+- **Sound effects:**  
+  - Beep sounds on win and draw events
+
+- **Responsive design:**  
+  - Adjusts well to different screen sizes including mobiles
+
+- **Restart button:**  
+  - Reset the game board and scores anytime
+
+---
+
+## How to Play
+
+1. Open the game in your browser.
+2. Select the game mode from the dropdown menu.
+3. Click on an empty cell to place your mark (`X` or `O`).
+4. Try to get 3 marks in a row horizontally, vertically, or diagonally.
+5. Game ends on a win or draw, with scores updating accordingly.
+6. Click **Restart** to start a new game.
+
+---
+
+## Technologies Used
+
+- **HTML5** for structure
+- **CSS3** for styling and animations (all internal CSS)
+- **Vanilla JavaScript** for game logic, UI updates, and AI moves
+
+---
+
+## How to Run Locally
+
+1. Clone or download this repository.
+2. Open the folder and double-click on `index.html`.
+3. The game will open in your default browser and is ready to play.
+
+---
+
+## Contribution
+
+This project is beginner-friendly. Feel free to fork and submit pull requests to improve UI, add features, or optimize AI.
+
+---
+
+## License
+
+This project is open-source and free to use for learning and personal projects.
+
+---
+
+## Contact
+
+For questions or suggestions, reach out at:
+
+- GitHub: [yourusername](https://github.com/yourusername)
+
+---
+
+**Enjoy playing!** 🎮✨
